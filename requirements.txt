@@ -1,2 +1,3 @@
 plotly
 yfinance
+koreanize_matplotlib
