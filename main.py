@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import difflib
 
 st.set_page_config(page_title="기업 성장 예측기", layout="wide")
-st.title("📈 시가총액 & 주가 기반 기업 성장 예측기")
+st.title("📈 시가총액 & 주가 기반 기업 성장 예측기 By Lee bros ")
 
 # (중략) — 앞부분은 사용자 입력 및 데이터 로딩 부분 (생략 가능)
 
