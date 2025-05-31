@@ -2,14 +2,11 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
-import difflib
+import plotly.express as px
 
 st.set_page_config(page_title="기업 성장 예측기", layout="wide")
 st.title("📈 시가총액 & 주가 기반 기업 성장 예측 프로그램 By Lee bros ")
-
-# (중략) — 앞부분은 사용자 입력 및 데이터 로딩 부분 (생략 가능)
 
 # RSI 계산 함수
 def compute_rsi(series, period=14):
@@ -96,7 +93,7 @@ def analyze_technical_conditions_with_score(df):
     result.append(f"🔢 종합 점수: {score} / 6")
     return result, score
 
-# 여기부터 사용자 입력 후 데이터 불러오는 부분 등 동일하게 유지
+# 사용자 입력
 company_input = st.text_input("🔍 분석할 기업명을 입력하세요 (예: 삼성전자, Apple, 테슬라 등)", value="삼성전자")
 
 def company_name_to_ticker(name):
@@ -157,61 +154,3 @@ if ticker_input:
                 st.metric("💰 현재 시가총액", f"${market_cap/1e9:.2f}B" if market_cap else "N/A")
             with col2:
                 st.metric("📅 분석기간", f"{start_date.date()} ~ {end_date.date()}")
-
-            st.markdown("### 📉 주가 추이")
-            fig, ax = plt.subplots(figsize=(10, 4))
-            ax.plot(hist.index, hist['Close'], label='종가', color='blue')
-            ax.set_xlabel("날짜")
-            ax.set_ylabel("주가 ($)")
-            ax.set_title("과거 주가")
-            ax.grid(True)
-            st.pyplot(fig)
-
-            start_price = hist['Close'].iloc[0]
-            end_price = hist['Close'].iloc[-1]
-            cagr = ((end_price / start_price) ** (1 / 5) - 1) * 100
-
-            st.markdown("### 📈 성장 분석")
-            st.success(f"📌 최근 5년 간 연평균 성장률(CAGR): **{cagr:.2f}%**")
-
-            if market_cap:
-                future_5y_cap = market_cap * ((1 + cagr / 100) ** 5)
-                st.markdown("### 🔮 성장 예측")
-                st.info(f"예상 5년 후 시가총액 (단순 예측): **${future_5y_cap/1e9:.2f}B**")
-
-            st.markdown("### 🧐 그래서 이 주식을 사야 할까?")
-            recommendation = "❓ 판단 보류"
-            if cagr > 10:
-                if market_cap and market_cap < 1e11:
-                    recommendation = "✅ 매수 고려 가능 (고성장 + 중소형 시총)"
-                else:
-                    recommendation = "🟡 성장성은 좋지만 시총이 이미 큼 (안정적)"
-            elif cagr > 0:
-                recommendation = "⚠️ 성장은 있지만 제한적"
-            else:
-                recommendation = "❌ 최근 5년간 주가 하락 - 투자 신중 필요"
-            st.subheader(recommendation)
-            st.caption("※ 이 판단은 단순 참고용이며, 실제 투자 결정은 본인의 책임입니다.")
-
-            # 기술적 조건 분석 + 점수화
-            st.markdown("### 🧐 주식 떡상 지표 분석 6가지 조건 비교 (점수화 포함)")
-            tech_analysis_results, tech_score = analyze_technical_conditions_with_score(hist.tail(60))
-            for line in tech_analysis_results[:-1]:  # 종합 점수 문구는 제외하고 출력
-                st.write(line)
-
-            max_score = 6
-            st.progress(tech_score / max_score)
-            st.metric(label="종합 기술적 조건 점수", value=f"{tech_score} / {max_score}")
-
-            # 점수별 메시지
-            if tech_score >= 4:
-                st.success(f"✅ 총 점수 {tech_score}점: 강한 상승 신호!")
-            elif tech_score >= 2:
-                st.warning(f"⚠️ 총 점수 {tech_score}점: 상승 가능성 있음")
-            else:
-                st.info(f"ℹ️ 총 점수 {tech_score}점: 신중한 관찰 필요")
-
-    except Exception as e:
-        st.error(f"에러가 발생했습니다: {e}")
-else:
-    st.error("해당 기업명을 티커로 변환할 수 없습니다. 다른 이름이나 영어명을 시도해보세요.")
